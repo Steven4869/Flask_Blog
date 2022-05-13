@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% block content %}
+
+{% for messages in get_flashed_messages() %}
+<div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
+    {{messages}}
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+  </div>
+    
+    
+{% endfor %}
+
+<!-- If name exists -->
+{% if name %}
+    <h1>Hello {{ name }}</h1>
+    <br><br>
+    <table class="table tabel-hover table-striped">
+    {% for views in display_users %}
+    <tr>
+        <td>
+    {{ views.id }}. {{ views.name }} - {{ views.email }} 
+    </td>
+    </tr>
+    {% endfor %}
+</table>
+{% else %}
+    <h1>USER LIST:</h1>
+    <br>
+    <div class="shadow p-3 mb-5 bg-bodyrounded">
+    <form action="" method="post">
+        {{ form.hidden_tag() }}
+        {{form.name.label}}
+        {{form.name(class="form-control")}}
+        <br>
+        {{form.email.label}}
+        {{form.email(class="form-control")}}
+        <br>
+        {{form.submit(class="btn btn-primary")}}
+    </form>
+    </div>
+    
+{% endif %}
+{% endblock %}
