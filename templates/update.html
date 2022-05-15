@@ -1,6 +1,5 @@
 {% extends 'base.html' %}
 {% block content %}
-
 {% for messages in get_flashed_messages() %}
 <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
     {{messages}}
@@ -18,38 +17,29 @@
     {% for views in display_users %}
     <tr>
         <td>
-            {{ views.id }}. <a href="{{url_for('update', id=views.id)}}">{{ views.name }}</a> - {{ views.email }} - {{views.favourite_anime}} - <a href="{{url_for('delete', id=views.id)}}">Delete</a>
+    {{ views.id }}. <a href="{{url_for('update', id=views.id)}}">{{ views.name }}</a> - {{ views.email }} - {{views.favourite_anime}}
     </td>
     </tr>
     {% endfor %}
 </table>
 {% else %}
-    <h1>USER LIST:</h1>
+    <h1>Update User</h1>
     <br>
     <div class="shadow p-3 mb-5 bg-bodyrounded">
-    <form action="" method="post">
+    <form action="/update/{{ name_to_update.id}}" method="post">
         {{ form.hidden_tag() }}
         {{form.name.label}}
-        {{form.name(class="form-control")}}
+        {{form.name(class="form-control", value=name_to_update.name)}}
         <br>
         {{form.email.label}}
-        {{form.email(class="form-control")}}
+        {{form.email(class="form-control", value=name_to_update.email)}}
         <br>
         {{form.favourite_anime.label}}
-        {{form.favourite_anime(class="form-control")}}
+        {{form.favourite_anime(class="form-control", value=name_to_update.favourite_anime)}}
         <br>
         {{form.submit(class="btn btn-primary")}}
     </form>
     </div>
-    <br><br>
-    <table class="table tabel-hover table-striped">
-        {% for views in display_users %}
-        <tr>
-            <td>
-        {{ views.id }}. <a href="{{url_for('update', id=views.id)}}">{{ views.name }}</a> - {{ views.email }} - {{views.favourite_anime}} - <a href="{{url_for('delete', id=views.id)}}">Delete</a>
-        </td>
-        </tr>
-        {% endfor %}
     
 {% endif %}
 {% endblock %}
