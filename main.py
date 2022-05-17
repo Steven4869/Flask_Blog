@@ -1,12 +1,14 @@
 from flask import Flask, render_template, flash, request
 from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField
-from wtforms.validators import DataRequired
+from wtforms import StringField, SubmitField, PasswordField, BooleanField, ValidationError
+from wtforms.validators import DataRequired, EqualTo, Length
 import yaml
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from werkzeug.security import generate_password_hash, check_password_hash
+from wtforms.widgets import TextArea
 from datetime import datetime
+from datetime import date
 
 app = Flask(__name__)
 
@@ -24,7 +26,22 @@ app.config['SECRET_KEY'] = data['secret_key']
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
+#Creating a Blog Post Model
+class Posts(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(255), nullable=False)
+    content = db.Column(db.Text)
+    author = db.Column(db.String(255), nullable=False)
+    date_posted =db.Column(db.DateTime)
+    slug = db.Column(db.String(255))
 
+# Creating Post Form
+class PostForm(FlaskForm):
+    title = StringField("Title", validators=[DataRequired()])
+    content = StringField("Content", validators=[DataRequired()], widget=TextArea())
+    author = StringField("Author", validators=[DataRequired()])
+    slug = StringField("Slug", validators=[DataRequired()])
+    submit = SubmitField("Submit ")
 # Creating Model
 class Users(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -57,6 +74,8 @@ class UserProfile(FlaskForm):
     name = StringField("Please Enter your Name", validators=[DataRequired()])
     email = StringField("Please Enter your Email", validators=[DataRequired()])
     favourite_anime = StringField("Please enter the name of your favourite anime")
+    password_hash = PasswordField("password", validators=[DataRequired(), EqualTo('password_hash2', message="Passwords must match")])
+    password_hash2 = PasswordField("Confirm Password", validators=[DataRequired()])
     submit = SubmitField("Submit")
 
 
@@ -75,6 +94,37 @@ def page_not_found(e):
 @app.errorhandler(500)
 def internal_server_error(e):
     return render_template("500.html"), 500
+
+# Add Post Page
+@app.route('/add-post', methods=['GET', 'POST'])
+def add_post():
+    form = PostForm()
+    if form.validate_on_submit():
+        post = Posts(title=form.title.data, content=form.content.data, author=form.author.data, slug=form.slug.data)
+        form.title.data = ''
+        form.content.data = ''
+        form.author.data = ''
+        form.slug.data = ''
+        # Add post to the database
+        db.session.add(post)
+        db.session.commit()
+
+        flash("Post submitted successfully")
+
+    return render_template("add_post.html", form=form)
+
+# Show the Posts Page
+@app.route('/posts')
+def posts():
+    # Taking blog posts from database
+    posts= Posts.query.order_by(Posts.date_posted)
+    return render_template('posts.html', posts=posts)
+# Separate page for the blog
+@app.route('/posts/<int:id>')
+def post(id):
+    post = Posts.query.get_or_404(id)
+    return render_template('post.html', post=post)
+
 
 
 # Enter Name page
@@ -119,13 +169,17 @@ def add_user():
     if form.validate_on_submit():
         user = Users.query.filter_by(email=form.email.data).first()
         if user is None:
-            user = Users(name=form.name.data, email=form.email.data, favourite_anime=form.favourite_anime.data)
+            # Hashing the password
+            hashed_password = generate_password_hash(form.password_hash.data, "sha256")
+            user = Users(name=form.name.data, email=form.email.data, favourite_anime=form.favourite_anime.data,
+                         password_hash=hashed_password)
             db.session.add(user)
             db.session.commit()
         name = form.name.data
         form.name.data = ''
         form.email.data = ''
-        form.favourite_anime.data
+        form.favourite_anime.data = ''
+        form.password_hash.data = ''
         flash("User Added Successfully")
     display_users = Users.query.order_by(Users.date_added)
     return render_template('add_user.html', form=form, name=name, display_users=display_users)
