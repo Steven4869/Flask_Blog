@@ -24,13 +24,17 @@
     {% endfor %}
 </table>
 {% else %}
-    <h1>USER LIST:</h1>
+<br>
+    <h1>Register</h1>
     <br>
     <div class="shadow p-3 mb-5 bg-bodyrounded">
     <form action="" method="post">
         {{ form.hidden_tag() }}
         {{form.name.label}}
         {{form.name(class="form-control")}}
+        <br>
+        {{form.username.label}}
+        {{form.username(class="form-control")}}
         <br>
         {{form.email.label}}
         {{form.email(class="form-control")}}
@@ -52,7 +56,7 @@
         {% for views in display_users %}
         <tr>
             <td>
-        {{ views.id }}. <a href="{{url_for('update', id=views.id)}}">{{ views.name }}</a> - {{ views.email }} - {{views.favourite_anime}} - <a href="{{url_for('delete', id=views.id)}}">Delete</a>
+         <a href="{{url_for('update', id=views.id)}}">{{ views.name }}</a>-{{views.username}} - {{ views.email }} - {{views.favourite_anime}} - <a href="{{url_for('delete', id=views.id)}}">Delete</a>
         </td>
         </tr>
         {% endfor %}

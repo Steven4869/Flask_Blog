@@ -8,21 +8,8 @@
     
     
 {% endfor %}
-
-<!-- If name exists -->
-{% if name %}
-    <h1>Hello {{ name }}</h1>
-    <br><br>
-    <table class="table tabel-hover table-striped">
-    {% for views in display_users %}
-    <tr>
-        <td>
-    {{ views.id }}. <a href="{{url_for('update', id=views.id)}}">{{ views.name }}</a> - {{ views.email }} - {{views.favourite_anime}}
-    </td>
-    </tr>
-    {% endfor %}
-</table>
-{% else %}
+{% if name_to_update.id == current_user.id %}
+<br>
     <h1>Update User</h1>
     <br>
     <div class="shadow p-3 mb-5 bg-bodyrounded">
@@ -38,8 +25,13 @@
         {{form.favourite_anime(class="form-control", value=name_to_update.favourite_anime)}}
         <br>
         {{form.submit(class="btn btn-primary")}}
+        <a href="{{url_for('delete', id=current_user.id)}}" class="btn btn-danger">Delete</a>
     </form>
     </div>
-    
-{% endif %}
+{% else %}
+<div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
+    Access Denied, You can't edit this page
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+  </div>
+  {% endif %}
 {% endblock %}

@@ -10,26 +10,19 @@
     
 {% endfor %}
 
-<h1>Add Blog Post</h1>
-    <br>
+<h1>Login </h1>
     <div class="shadow p-3 mb-5 bg-bodyrounded">
     <form action="" method="post">
         {{ form.hidden_tag() }}
-        {{form.title.label}}
-        {{form.title(class="form-control")}}
         <br>
-        {{form.author.label}}
-        {{form.author(class="form-control")}}
+        {{form.username.label}}
+        {{form.username(class="form-control")}}
         <br>
-        {{form.slug.label}}
-        {{form.slug(class="form-control")}}
-        <br>
-        {{form.content.label}}
-        {{form.content(class="form-control", rows="5")}}
+        {{form.password.label}}
+        {{form.password(class="form-control")}}
         <br>
         {{form.submit(class="btn btn-primary")}}
     </form>
     </div>
-
-
+    
 {% endblock %}

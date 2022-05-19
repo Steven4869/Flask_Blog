@@ -19,6 +19,8 @@
         {{ post.slug }} <br>
         {{ post.content }} <br>
         <a href="{{url_for('post', id=post.id)}}" class="btn btn-outline-primary">View</a>
+        <a href="{{url_for('edit_posts', id=post.id)}}" class="btn btn-outline-secondary ">Edit Blog</a>
+
         <hr>
         <br>
     </div>
