@@ -5,21 +5,18 @@
 <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
     {{messages}}
     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-  </div>
-    
-    
+</div>
+
+
 {% endfor %}
 
 <h1>Add Blog Post</h1>
-    <br>
-    <div class="shadow p-3 mb-5 bg-bodyrounded">
+<br>
+<div class="shadow p-3 mb-5 bg-bodyrounded">
     <form action="" method="post">
         {{ form.hidden_tag() }}
         {{form.title.label}}
         {{form.title(class="form-control")}}
-        <br>
-        {{form.author.label}}
-        {{form.author(class="form-control")}}
         <br>
         {{form.slug.label}}
         {{form.slug(class="form-control")}}
@@ -29,7 +26,11 @@
         <br>
         {{form.submit(class="btn btn-primary")}}
     </form>
-    </div>
+   
+
+</div>
+{{ ckeditor.load() }}
+{{ ckeditor.config(name='content') }}
 
 
 {% endblock %}

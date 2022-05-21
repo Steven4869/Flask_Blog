@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block content %}
+   <br>
+   <h2>You searched for: <em>{{ searched }}</em></h2>
+   <br>
+   {% if posts %}
+   {% for post in posts %}
+   <div class="shadow p-3 mb-5 bg-bodyrounded">
+      <h1>{{post.title}}</h1> By: {{ post.poster.name }} <br> 
+      {{ post.date_posted }} <br>
+      {{ post.slug }} <br>
+      {{ post.content }} <br>
+      <a href="{{url_for('post', id=post.id)}}" class="btn btn-outline-primary">View</a>
+      {% if post.author_id == current_user.id %}
+        <a href="{{url_for('edit_posts', id=post.id)}}" class="btn btn-outline-secondary ">Edit Blog</a>
+      {% endif %}
+
+      <hr>
+      <br>
+  </div>
+   {% endfor %}
+   {% else %}
+   <p>Sorry, your search result: <strong>{{searched}}</strong> couldn't be found</p>
+   {% endif %}
+{% endblock %}

@@ -23,6 +23,11 @@
           <li class="nav-item">
             <a class="nav-link active" aria-current="page" href="{{url_for('dashboard')}}">Dashboard</a>
           </li>
+          {% if current_user.username == 'Shivam728' %}
+          <li class="nav-item">
+            <a class="nav-link active" aria-current="page" href="{{url_for('admin')}}">Admin</a>
+            {% endif %}
+          </li>
           {% else %}
           <li class="nav-item">
             <a class="nav-link active" aria-current="page" href="{{url_for('add_user')}}">Register</a>
@@ -35,8 +40,9 @@
             <a class="nav-link" href="{{url_for('name')}}">UserName</a>
           </li>
         </ul>
-        <form class="d-flex">
-          <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
+        <form method="POST" action="{{url_for('search')}}" class="d-flex">
+          {{ form.hidden_tag() }}
+          <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search" name="searched">
           <button class="btn btn-outline-success" type="submit">Search</button>
         </form>
       </div>

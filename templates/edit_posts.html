@@ -30,6 +30,8 @@
             <br>
             {{form.submit(class="btn btn-primary")}}
         </form>
+        {{ ckeditor.load() }}
+ {{ ckeditor.config(name='body') }}
     </div>
 <a href="{{url_for('posts')}}" class="btn btn-outline-secondary btn-sm">Blog</a>
 
