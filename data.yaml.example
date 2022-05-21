@@ -1,0 +1,4 @@
+database_uri: 'mysql+pymysql://root:password@localhost/'name-of-database''
+secret_key: 'your secret key'
+
+//Rename this file to data.yaml in order to make it work

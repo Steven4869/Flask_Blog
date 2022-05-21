@@ -24,8 +24,7 @@ ckeditor = CKEditor(app)
 data = yaml.full_load(open('data.yaml'))
 app.config['SECRET_KEY'] = data['secret_key']
 # Add Database
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgres://kwnbjqysszhodg:0c4d3d63e729ab93252b027ef1c44da173d7f0a3c2f089e41acc78e19a6b09a7@ec2-54-165-90-230.compute-1.amazonaws.com:5432/d897qr86aoovcj'
-# app.config['SQLALCHEMY_DATABASE_URI'] = data['database_uri']
+app.config['SQLALCHEMY_DATABASE_URI'] = data['database_uri']
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
@@ -69,7 +68,7 @@ class Users(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(25), nullable=False, unique=True)
     name = db.Column(db.String(200), nullable=False)
-    about_author = db.Column(db.Text(), nullable=True)
+    about_author = db.Column(db.Text(500), nullable=True)
     email = db.Column(db.String(200), nullable=True, unique=True)
     favourite_anime = db.Column(db.String(200))
     profile_pic = db.Column(db.String(500), nullable=True)
@@ -178,7 +177,6 @@ def add_post():
         post = Posts(title=form.title.data, content=form.content.data, author_id=poster, slug=form.slug.data)
         form.title.data = ''
         form.content.data = ''
-        # form.author.data = ''
         form.slug.data = ''
         # Add post to the database
         db.session.add(post)
@@ -212,7 +210,6 @@ def edit_posts(id):
     form = PostForm()
     if form.validate_on_submit():
         post.title = form.title.data
-        # post.author = form.author.data
         post.content = form.content.data
         post.slug = form.slug.data
 
@@ -223,7 +220,6 @@ def edit_posts(id):
         return redirect(url_for('post', id=post.id))
     if current_user.id == post.author_id:
         form.title.data = post.title
-        # form.author.data = post.author
         form.slug.data = post.slug
         form.content.data = post.content
         return render_template('edit_posts.html', form=form)
