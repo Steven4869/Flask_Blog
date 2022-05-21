@@ -1,6 +1,7 @@
 from flask import Flask, render_template, flash, request, redirect, url_for
 from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField, PasswordField, BooleanField, ValidationError
+from wtforms import StringField, SubmitField, PasswordField, BooleanField, ValidationError, TextAreaField
+from flask_wtf.file import FileField
 from wtforms.validators import DataRequired, EqualTo, Length
 import yaml
 from flask_sqlalchemy import SQLAlchemy
@@ -9,26 +10,27 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from wtforms.widgets import TextArea
 from flask_login import UserMixin, login_user, LoginManager, login_required, logout_user, current_user
 from flask_ckeditor import CKEditor, CKEditorField
+from werkzeug.utils import secure_filename
+import uuid as uuid
+import os
 from datetime import datetime
 from datetime import date
 
 app = Flask(__name__)
 app.config['CKEDITOR_PKG_TYPE'] = 'standard'
 ckeditor = CKEditor(app)
-# Add Database
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:password@localhost/blog'
+
 # DATABSE intialsiation
 data = yaml.full_load(open('data.yaml'))
 app.config['SECRET_KEY'] = data['secret_key']
-# app.config['MYSQL_HOST'] = data['mysql_host']
-# app.config['MYSQL_USER'] = data['mysql_user']
-# app.config['MYSQL_PASSWORD'] = data['mysql_password']
-# app.config['MYSQL_DB'] = data['mysql_db']
-# mysql = MySQL(app)
-
+# Add Database
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgres://kwnbjqysszhodg:0c4d3d63e729ab93252b027ef1c44da173d7f0a3c2f089e41acc78e19a6b09a7@ec2-54-165-90-230.compute-1.amazonaws.com:5432/d897qr86aoovcj'
+# app.config['SQLALCHEMY_DATABASE_URI'] = data['database_uri']
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
+UPLOAD_FOLDER ='static/images/'
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 # Flask Login
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -44,7 +46,7 @@ def load_user(user_id):
 class Posts(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(255), nullable=False)
-    content = db.Column(db.Text)
+    content = db.Column(db.Text())
     # author = db.Column(db.String(255), nullable=False)
     date_posted = db.Column(db.DateTime)
     slug = db.Column(db.String(255))
@@ -67,8 +69,10 @@ class Users(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(25), nullable=False, unique=True)
     name = db.Column(db.String(200), nullable=False)
+    about_author = db.Column(db.Text(), nullable=True)
     email = db.Column(db.String(200), nullable=True, unique=True)
     favourite_anime = db.Column(db.String(200))
+    profile_pic = db.Column(db.String(500), nullable=True)
     password_hash = db.Column(db.String(128), nullable=False)
     date_added = db.Column(db.DateTime)
     posts = db.relationship('Posts', backref='poster')
@@ -100,6 +104,8 @@ class UserProfile(FlaskForm):
     username = StringField("Please enter your username", validators=[DataRequired()])
     email = StringField("Please Enter your Email", validators=[DataRequired()])
     favourite_anime = StringField("Please enter the name of your favourite anime")
+    about_author = TextAreaField("Give details about the author(optional")
+    profile_pic = FileField("Profile Picture")
     password_hash = PasswordField("password", validators=[DataRequired(),
                                                           EqualTo('password_hash2', message="Passwords must match")])
     password_hash2 = PasswordField("Confirm Password", validators=[DataRequired()])
@@ -305,8 +311,15 @@ def update(id):
         name_to_update.name = request.form['name']
         name_to_update.email = request.form['email']
         name_to_update.favourite_anime = request.form['favourite_anime']
+        name_to_update.about_author = request.form['about_author']
+        name_to_update.profile_pic = request.files['profile_pic']
+        pic_filename = secure_filename(name_to_update.profile_pic.filename)
+        pic_name = str(uuid.uuid1()) + "_" + pic_filename
+        saver = request.files['profile_pic']
+        name_to_update.profile_pic = pic_name
         try:
             db.session.commit()
+            saver.save(os.path.join(app.config['UPLOAD_FOLDER'], pic_name))
             flash("User updated sucessfully")
             return render_template('update.html', form=form, name_to_update=name_to_update)
         except:
@@ -326,7 +339,7 @@ def add_user():
             # Hashing the password
             hashed_password = generate_password_hash(form.password_hash.data, "sha256")
             user = Users(username=form.username.data, name=form.name.data, email=form.email.data,
-                         favourite_anime=form.favourite_anime.data,
+                         favourite_anime=form.favourite_anime.data,about_author=form.about_author.data,
                          password_hash=hashed_password)
             db.session.add(user)
             db.session.commit()
@@ -335,6 +348,7 @@ def add_user():
         form.username.data = ''
         form.email.data = ''
         form.favourite_anime.data = ''
+        form.about_author.data = ''
         form.password_hash.data = ''
         flash("User Added Successfully")
     display_users = Users.query.order_by(Users.date_added)
