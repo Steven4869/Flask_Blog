@@ -47,7 +47,7 @@ class Posts(db.Model):
     title = db.Column(db.String(255), nullable=False)
     content = db.Column(db.Text())
     # author = db.Column(db.String(255), nullable=False)
-    date_posted = db.Column(db.DateTime)
+    date_posted = db.Column(db.DateTime, default=datetime.utcnow)
     slug = db.Column(db.String(255))
     # Create a foreign key to link users(primary key fo users model
     author_id = db.Column(db.Integer, db.ForeignKey('users.id'))
@@ -59,7 +59,7 @@ class PostForm(FlaskForm):
     # content = CKEditorField("Content", validators=[DataRequired()])
     content = CKEditorField("Content")
     author = StringField("Author")
-    slug = PasswordField("Slug", validators=[DataRequired()])
+    slug = StringField("Slug", validators=[DataRequired()])
     submit = SubmitField("Submit ")
 
 
@@ -73,7 +73,7 @@ class Users(db.Model, UserMixin):
     favourite_anime = db.Column(db.String(200))
     profile_pic = db.Column(db.String(500), nullable=True)
     password_hash = db.Column(db.String(128), nullable=False)
-    date_added = db.Column(db.DateTime)
+    date_added = db.Column(db.DateTime, default=datetime.utcnow)
     posts = db.relationship('Posts', backref='poster')
 
     @property
@@ -191,7 +191,7 @@ def add_post():
 @app.route('/posts')
 def posts():
     # Taking blog posts from database
-    posts = Posts.query.order_by(Posts.date_posted)
+    posts = Posts.query.order_by(Posts.date_posted.desc())
     return render_template('posts.html', posts=posts)
 
 
@@ -308,19 +308,26 @@ def update(id):
         name_to_update.email = request.form['email']
         name_to_update.favourite_anime = request.form['favourite_anime']
         name_to_update.about_author = request.form['about_author']
-        name_to_update.profile_pic = request.files['profile_pic']
-        pic_filename = secure_filename(name_to_update.profile_pic.filename)
-        pic_name = str(uuid.uuid1()) + "_" + pic_filename
-        saver = request.files['profile_pic']
-        name_to_update.profile_pic = pic_name
-        try:
+
+        if request.files['profile_pic']:
+            name_to_update.profile_pic = request.files['profile_pic']
+            pic_filename = secure_filename(name_to_update.profile_pic.filename)
+            pic_name = str(uuid.uuid1()) + "_" + pic_filename
+            saver = request.files['profile_pic']
+            name_to_update.profile_pic = pic_name
+            try:
+                db.session.commit()
+                saver.save(os.path.join(app.config['UPLOAD_FOLDER'], pic_name))
+                flash("User updated sucessfully")
+                return render_template('update.html', form=form, name_to_update=name_to_update)
+            except:
+                flash("Error! please try again")
+                return render_template('update.html', form=form, name_to_update=name_to_update)
+        else:
             db.session.commit()
-            saver.save(os.path.join(app.config['UPLOAD_FOLDER'], pic_name))
             flash("User updated sucessfully")
             return render_template('update.html', form=form, name_to_update=name_to_update)
-        except:
-            flash("Error! please try again")
-            return render_template('update.html', form=form, name_to_update=name_to_update)
+
     else:
         return render_template('update.html', form=form, name_to_update=name_to_update)
 

@@ -15,9 +15,8 @@
 
 <div class="shadow p-3 mb-5 bg-bodyrounded">
         <h1>{{post.title}}</h1> By: {{ post.poster.name }} <br> 
-        {{ post.date_posted }} <br>
         {{ post.slug }} <br>
-        {{ post.content }} <br>
+        {{ post.content|safe }} <br>
         <hr>
         <br>
     </div>
