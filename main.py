@@ -46,6 +46,7 @@ class Posts(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(255), nullable=False)
     content = db.Column(db.Text())
+    banner = db.Column(db.String(255))
     # author = db.Column(db.String(255), nullable=False)
     date_posted = db.Column(db.DateTime, default=datetime.utcnow)
     slug = db.Column(db.String(255))
@@ -57,6 +58,7 @@ class Posts(db.Model):
 class PostForm(FlaskForm):
     title = StringField("Title", validators=[DataRequired()])
     # content = CKEditorField("Content", validators=[DataRequired()])
+    banner = StringField("Banner Picture", validators=[DataRequired()])
     content = CKEditorField("Content")
     author = StringField("Author")
     slug = StringField("Slug", validators=[DataRequired()])
@@ -124,7 +126,8 @@ class SearchForm(FlaskForm):
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    posts = Posts.query.order_by(Posts.date_posted.desc())[0:5]
+    return render_template('index.html', posts=posts)
 
 
 # Passing parameters to navbar
@@ -174,9 +177,10 @@ def add_post():
     form = PostForm()
     if form.validate_on_submit():
         poster = current_user.id
-        post = Posts(title=form.title.data, content=form.content.data, author_id=poster, slug=form.slug.data)
+        post = Posts(title=form.title.data, content=form.content.data, author_id=poster, slug=form.slug.data, banner=form.banner.data)
         form.title.data = ''
         form.content.data = ''
+        form.banner.data =''
         form.slug.data = ''
         # Add post to the database
         db.session.add(post)
@@ -211,6 +215,7 @@ def edit_posts(id):
     if form.validate_on_submit():
         post.title = form.title.data
         post.content = form.content.data
+        post.banner = form.banner.data
         post.slug = form.slug.data
 
         db.session.add(post)
@@ -222,6 +227,7 @@ def edit_posts(id):
         form.title.data = post.title
         form.slug.data = post.slug
         form.content.data = post.content
+        form.banner.data = post.banner
         return render_template('edit_posts.html', form=form)
     else:
         flash("Access Denied ")
